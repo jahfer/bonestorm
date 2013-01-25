@@ -1,8 +1,10 @@
-var express = require('express')(),
-	server = require('http').createServer(app),
-	io = require('socket.io').listen(server);
+var app = require('express').createServer(),
+	io = require('socket.io').listen(app);
 
-server.listen(80);
+var port = process.env.PORT || 5000;
+
+app.listen(port);
+io.set('log level', 1);
 
 app.get('/', function(req, res) {
 	res.sendfile(__dirname + "/index.html");
