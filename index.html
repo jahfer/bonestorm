@@ -12,6 +12,7 @@
 		<link rel="stylesheet" href=""/>
 
 		<script src="/socket.io/socket.io.js"></script>
+		<script src="/raphael-min.js"></script>
 
 		<!--[if lt IE 9]>
 			<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -20,14 +21,61 @@
 
 	<body lang="en">
 		<script>
-		  var socket = io.connect('http://localhost');
-		  socket.on('news', function (data) {
-		    console.log(data);
-		    socket.emit('my other event', { my: 'data' });
-		  });
-		</script>
+			var socket = io.connect('http://localhost');
+			var socket = io.connect('http://bonestorm.herokuapp.com');
 
-		<h1>Hello world!</h1>
+			var paper = Raphael(10, 50, 600, 600);
+			var rect = paper.rect(0, 0, 600, 600);
+
+			var User = function() {
+				this.x = Math.random() * 600;
+				this.y = Math.random() * 600;
+				this.shape = paper.circle(this.x, this.y, 10).attr({fill: "#f00", stroke: "#fff"});
+				this.uid = -1;
+			}
+
+			var player = new User();
+
+			socket.emit('user:connect', 'Jahfer');
+			socket.on('server:userId', function (id) {
+				player.uid = id;
+			});
+
+			socket.on('user:move:pos', function (data) {
+				player.shape.attr({cx: data.x, cy: data.y})
+			})
+
+			document.addEventListener('keydown', function (e) {
+				var evt = e ? e:event;
+  				var keyCode = evt.keyCode;
+
+  				switch (keyCode) {
+  					// left
+  					case 37:
+  						player.x -= 10;
+  						break;
+  					// up
+  					case 38:
+  						player.y -= 10;
+  						break;
+  					// right
+  					case 39:
+  						player.x += 10;
+  						break;
+  					// down
+  					case 40:
+  						player.y += 10;
+  						break;
+  				}
+
+				socket.emit('user:move:pos', {id: 0, x: player.x, y: player.y})
+				player.shape.attr({cx: player.x, cy: player.y});
+
+				e.preventDefault();
+				return false;
+			});
+
+		</script>
 
 	</body>
 
