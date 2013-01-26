@@ -126,6 +126,7 @@ io.sockets.on('connection', function (socket) {
 		if (data.y < 0) data.y = 0;
 		if (data.y > WIN_SIZE) data.y = WIN_SIZE;
 
+		console.log("User #" + data.id + " moved");
 		players[data.id].coords = {x: data.x, y: data.y};
 		socket.broadcast.volatile.emit('user:move:pos', data);
 	});
