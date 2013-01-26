@@ -21,8 +21,8 @@
 
 	<body lang="en">
 		<script>
-			//var socket = io.connect('http://localhost');
-			var socket = io.connect('http://bonestorm.jit.su');
+			var socket = io.connect('http://localhost');
+			//var socket = io.connect('http://bonestorm.jit.su');
 
 			var paper = Raphael(10, 50, 600, 600);
 			var rect = paper.rect(0, 0, 600, 600);
@@ -34,6 +34,7 @@
 				this.y = y || parseInt(Math.random() * 600, 10);
 				this.shape = paper.circle(this.x, this.y, 10).attr({fill: "#f00", stroke: "#fff"});
 				this.speed = 5;
+				this.weapon = "shotgun";
 			}
 
 			var player = new User();
@@ -42,6 +43,11 @@
 			socket.on('server:userId', function (id) {
 				console.log("Sending ID", id)
 				player.uid = id;
+			});
+
+			socket.on('user:disconnect', function (id) {
+				PLAYERS[id].shape.remove();
+				delete PLAYERS[id];
 			});
 
 			socket.on('user:move:pos', function (data) {
@@ -59,28 +65,19 @@
 
   				switch (keyCode) {
   					// left
-  					case 37:
-  						player.x -= player.speed;
-  						break;
+  					case 37: player.x -= player.speed; break;
   					// up
-  					case 38:
-  						player.y -= player.speed;
-  						break;
+  					case 38: player.y -= player.speed; break;
   					// right
-  					case 39:
-  						player.x += player.speed;
-  						break;
+  					case 39: player.x += player.speed; break;
   					// down
-  					case 40:
-  						player.y += player.speed;
-  						break;
+  					case 40: player.y += player.speed; break;
   				}
 
 				socket.emit('user:move:pos', {id: player.uid, x: player.x, y: player.y})
 				player.shape.attr({cx: player.x, cy: player.y});
 
 				e.preventDefault();
-				return false;
 			});
 
 		</script>

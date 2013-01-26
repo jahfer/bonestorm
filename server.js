@@ -5,6 +5,8 @@ var express = require('express'),
 var MAX_ID_SIZE  = 9000000000000000;
 var port = process.env.PORT || 5000;
 
+var WIN_SIZE = 3600;
+
 var nextUserId  = 0;
 var nextEnemyId = 0;
 
@@ -86,11 +88,11 @@ io.sockets.on('connection', function (socket) {
 		socket.broadcast.volatile.emit('user:weapon:state', data);
 	});
 
-	socket.on('user:death', function() {
+	/*socket.on('user:death', function() {
 		socket.get('uid', function (err, id) {
 			socket.broadcast.emit('user:death', id);
 		});
-	});
+	});*/
 
 	socket.on('enemy:hit', function(data) {
 		// enemy uid
@@ -112,6 +114,13 @@ io.sockets.on('connection', function (socket) {
 		var e = new Enemy();
 		enemies[e.uid] = e;
 	});
+
+	socket.on('disconnect', function() {
+		socket.get('uid', function (err, id) {
+			console.log("User " + id + " disconnected");
+			socket.broadcast.emit('user:disconnect', id);
+		});
+	});
 });
 
 function getNextEnemyId() {
@@ -119,7 +128,7 @@ function getNextEnemyId() {
 	if (nextId > MAX_ID_SIZE) {
 		nextId = 0;
 	}
-	
+
 	return nextId;
 }
 
