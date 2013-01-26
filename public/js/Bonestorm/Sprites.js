@@ -112,7 +112,7 @@ var PlayerSprite = (function (_super) {
     };
     PlayerSprite.prototype.drawMethod = function (x, y) {
         this.context.beginPath();
-        this.context.arc(this.x, this.y, 40, 0, 2 * Math.PI, false);
+        this.context.arc(this.x + this.width / 2, this.y + this.height / 2, 40, 0, 2 * Math.PI, false);
         this.context.fillStyle = 'green';
         this.context.fill();
     };
@@ -199,6 +199,10 @@ var EnemyPlayerSprite = (function (_super) {
         this.Y = y;
     };
     EnemyPlayerSprite.prototype.detectHit = function (bullet) {
+        socket.emit("", {
+            player: this,
+            damage: bullet.damage
+        });
         if(bullet.X > this.X && bullet.X < this.X + this.width && bullet.Y > this.Y && bullet.Y < this.Y + this.height) {
             this.health -= bullet.damage;
             console.log("PLAYER HIT");
