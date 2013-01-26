@@ -59,22 +59,22 @@ io.sockets.on('connection', function (socket) {
 	socket.on('user:move:pos', function(data) {
 		console.log('user:move:pos', data);
 		// id, x, y
-		socket.broadcast.emit('user:move:pos', data);
+		socket.broadcast.volatile.emit('user:move:pos', data);
 	});
 
 	socket.on('user:move:dir', function(data) {
 		// id, n-s-e-w
-		socket.broadcast.emit('user:move:dir', data);
+		socket.broadcast.volatile.emit('user:move:dir', data);
 	});
 
 	socket.on('user:weapon:pickup', function(data) {
 		// picked up a new weapon
-		socket.broadcast.emit('user:weapon:pickup', data);
+		socket.broadcast.volatile.emit('user:weapon:pickup', data);
 	});
 
 	socket.on('user:weapon:state', function(data) {
 		// shooting?
-		socket.broadcast.emit('user:weapon:state', data);
+		socket.broadcast.volatile.emit('user:weapon:state', data);
 	});
 
 	socket.on('user:death', function() {
@@ -91,7 +91,7 @@ io.sockets.on('connection', function (socket) {
 			delete enemies[data.enemy.uid];
 			socket.broadcast.emit('enemy:death', data.enemy.uid);
 		} else {
-			socket.broadcast.emit('enemy:hit', enemies[data.enemy.uid]);
+			socket.broadcast.volatile.emit('enemy:hit', enemies[data.enemy.uid]);
 		}
 
 	});
