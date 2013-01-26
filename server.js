@@ -26,7 +26,7 @@ var districts = [
 	{x:1200, y:1200}
 ];
 
-app.use(express.static('public'));
+app.use(express.static('public_testing'));
 app.listen(port);
 
 io.configure(function () {
@@ -43,6 +43,20 @@ var Enemy = function() {
 	this.y = Math.random() * 3600;
 	this.health = 100;
 	this.uid = getNextEnemyId();
+	this.speed = {
+		x: (10 * Math.random()) - 5, // -5 to 5
+		y: (10 * Math.random()) - 5  // -5 to 5
+	};
+};
+
+Enemy.prototype.update = function() {
+	this.x += this.speed.x;
+	this.y += this.speed.y;
+	if (this.x > WIN_SIZE) this.x = 0;
+	if (this.y > WIN_SIZE) this.y = 0;
+
+	// only send data for enemies in range...
+	io.sockets.emit('enemy:move:pos', {id: this.uid, x: this.x, y: this.y});
 };
 
 for (var i=0; i < 50; i++) {
@@ -56,7 +70,7 @@ var Weapon = function(name, strength) {
 	this.name = name;
 	this.strength = strength || 1;
 };
-weapons.push('shotgun', 100);
+weapons.push('pistol', 100);
 
 
 var Coords = function() {
@@ -84,28 +98,35 @@ io.sockets.on('connection', function (socket) {
 			coords: new Coords()
 		};
 
-		players[out.id] = socket.id;
+		players[out.id] = {
+			uid: out.id,
+			socketid: socket.id,
+			coords: out.coords
+		};
+
 		console.log("Received", name, "| Sending", out.id);
 
 		socket.set('uid', out.id);
 		socket.emit('server:userSettings', out);
+
+		players.forEach(function (player, index, array) {
+			socket.emit('user:move:pos', {id: player.uid, x: player.coords.x, y: player.coords.y});
+		});
 	});
 
 	socket.on('user:hit', function(data) {
 		// tell the player that was hit to update their health
-		io.sockets.socket(players[data.player.id]).emit('self:hit', data);
+		io.sockets.socket(players[data.player.id].socketid).emit('self:hit', data);
 	});
 
 	socket.on('user:move:pos', function(data) {
 		// id, x, y
-
 		if (data.x < 0) data.x = 0;
 		if (data.x > WIN_SIZE) data.x = WIN_SIZE;
 		if (data.y < 0) data.y = 0;
 		if (data.y > WIN_SIZE) data.y = WIN_SIZE;
 
-		console.log(data);
-
+		players[data.id].coords = {x: data.x, y: data.y};
 		socket.broadcast.volatile.emit('user:move:pos', data);
 	});
 
