@@ -26,7 +26,7 @@ var districts = [
 	{x:1200, y:1200}
 ];
 
-app.use(express.static('public_testing'));
+app.use(express.static('public'));
 app.listen(port);
 
 io.configure(function () {
