@@ -43,7 +43,6 @@ var PlayerSprite = (function (_super) {
             maxX: 0,
             maxY: 0
         };
-        console.log(this.name);
         this.setCanvas(canvas);
         this.x = this.canvas.width / 2;
         this.y = this.canvas.height / 2;
@@ -112,7 +111,7 @@ var PlayerSprite = (function (_super) {
     };
     PlayerSprite.prototype.drawMethod = function (x, y) {
         this.context.beginPath();
-        this.context.arc(this.x + this.width / 2, this.y + this.height / 2, 40, 0, 2 * Math.PI, false);
+        this.context.arc(this.x, this.y, 40, 0, 2 * Math.PI, false);
         this.context.fillStyle = 'green';
         this.context.fill();
     };
@@ -220,7 +219,7 @@ var EnemyPlayerSprite = (function (_super) {
     };
     EnemyPlayerSprite.prototype.drawMethod = function () {
         this.context.beginPath();
-        this.context.arc(this.x + this.width / 2, this.y + this.height / 2, 40, 0, 2 * Math.PI, false);
+        this.context.arc(this.x, this.y, 40, 0, 2 * Math.PI, false);
         this.context.fillStyle = 'red';
         this.context.fill();
     };
