@@ -11,7 +11,10 @@ var enemies = [];
 var weapons = [];
 
 app.listen(port);
-io.set('log level', 1);
+
+io.configure(function () {
+	io.set('log level', 1);
+});
 
 app.get('/', function(req, res) {
 	res.sendfile(__dirname + "/index.html");
