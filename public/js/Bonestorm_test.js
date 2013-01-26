@@ -20,22 +20,26 @@ var BonestormTest = (function (_super) {
         this.background.setAssetHandler(this.loader);
         this.background.setCanvas(this.canvas);
         this.player = new PlayerSprite(this.canvas, this, this.camera);
+        var _this = this;
         socket.emit("user:connect", "THRILLHO");
         socket.on("server:userSettings", function (data) {
-            this.player.id = data.id;
-            this.player.X = data.coords.x;
-            this.player.Y = data.coord.y;
+            console.log(data);
+            _this.player.id = data.id;
+            _this.player.X = data.coords.x;
+            _this.player.Y = data.coord.y;
         });
         socket.on("user:move:pos", function (data) {
-            if(typeof this.enemyPlayers[data.id] != "undefined") {
-                this.enemyPlayers[data.id].setPosition(data.x, data.y);
+            console.log(data);
+            if(typeof _this.enemyPlayers[data.id] != "undefined") {
+                _this.enemyPlayers[data.id].setPosition(data.x, data.y);
             } else {
-                this.enemyPlayers[data.id] = new EnemyPlayerSprite(this.canvas, this, this.camera);
-                this.enemyPlayers[data.id].setPosition(data.x, data.y);
+                _this.enemyPlayers[data.id] = new EnemyPlayerSprite(_this.canvas, _this, _this.camera);
+                _this.enemyPlayers[data.id].setPosition(data.x, data.y);
             }
         });
         socket.on("user:disconnect", function (id) {
-            delete this.enemyPlayers[id];
+            console.log(id);
+            delete _this.enemyPlayers[id];
         });
         this.start();
     }

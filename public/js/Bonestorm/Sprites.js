@@ -158,6 +158,8 @@ var PlayerSprite = (function (_super) {
             this.speedX += this.ACCEL;
         }
     };
+    PlayerSprite.prototype.onHit = function (damage, hitBy) {
+    };
     return PlayerSprite;
 })(SpritesheetSprite);
 var EnemyPlayerSprite = (function (_super) {
