@@ -54,6 +54,7 @@ io.sockets.on('connection', function (socket) {
 		var id = getNextUserId();
 
 		players[id] = socket.id;
+		console.log("Received", name, "| Sending", id);
 
 		socket.set('uid', id);
 		socket.emit('server:userId', id);
@@ -118,6 +119,8 @@ function getNextEnemyId() {
 	if (nextId > MAX_ID_SIZE) {
 		nextId = 0;
 	}
+	
+	return nextId;
 }
 
 function getNextUserId() {
@@ -125,6 +128,8 @@ function getNextUserId() {
 	if (nextId > MAX_ID_SIZE) {
 		nextId = 0;
 	}
+
+	return nextId;
 }
 
 
