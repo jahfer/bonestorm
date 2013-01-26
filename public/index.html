@@ -24,25 +24,39 @@
 			var socket = io.connect('http://localhost');
 			//var socket = io.connect('http://bonestorm.jit.su');
 
-			var paper = Raphael(10, 50, 600, 600);
-			var rect = paper.rect(0, 0, 600, 600);
+			var paper = Raphael(0, 0, 3600, 3600);
+			paper.image("/img/bg.png", 0, 0, 3600, 3600);
+
+			paper.rect(0, 0, 1200, 1200);
+			paper.rect(1200, 0, 1200, 1200);
+			paper.rect(2400, 0, 1200, 1200);
+			paper.rect(0, 1200, 1200, 1200);
+			paper.rect(1200, 1200, 1200, 1200);
+			paper.rect(2400, 1200, 1200, 1200);
+			paper.rect(0, 2400, 1200, 1200);
+			paper.rect(1200, 2400, 1200, 1200);
+			paper.rect(2400, 2400, 1200, 1200);
+
 			var PLAYERS = [];
 
 			var User = function(id, x, y) {
 				this.uid = id || -1;
-				this.x = x || parseInt(Math.random() * 600, 10);
-				this.y = y || parseInt(Math.random() * 600, 10);
+				this.x = x || -10;
+				this.y = y || -10;
 				this.shape = paper.circle(this.x, this.y, 10).attr({fill: "#f00", stroke: "#fff"});
 				this.speed = 5;
 				this.weapon = "shotgun";
 			}
 
 			var player = new User();
+			paper.image("/img/pipes.png", 0, 0, 3600, 3600);
 
 			socket.emit('user:connect', 'Jahfer');
-			socket.on('server:userId', function (id) {
-				console.log("Sending ID", id)
-				player.uid = id;
+			socket.on('server:userSettings', function (data) {
+				player.uid = data.id;
+				player.x = data.coords.x;
+				player.y = data.coords.y;
+				player.shape.attr({cx: data.coords.x, cy: data.coords.y});
 			});
 
 			socket.on('user:disconnect', function (id) {
@@ -65,19 +79,29 @@
 
   				switch (keyCode) {
   					// left
-  					case 37: player.x -= player.speed; break;
+  					case 37: 
+  						player.x -= player.speed;
+	  					e.preventDefault();
+  						break;
   					// up
-  					case 38: player.y -= player.speed; break;
+  					case 38: 
+  						player.y -= player.speed;
+	  					e.preventDefault();
+  						break;
   					// right
-  					case 39: player.x += player.speed; break;
+  					case 39: 
+  						player.x += player.speed;
+	  					e.preventDefault();
+  						break;
   					// down
-  					case 40: player.y += player.speed; break;
+  					case 40: 
+  						player.y += player.speed;
+	  					e.preventDefault();
+  						break;
   				}
 
 				socket.emit('user:move:pos', {id: player.uid, x: player.x, y: player.y})
 				player.shape.attr({cx: player.x, cy: player.y});
-
-				e.preventDefault();
 			});
 
 		</script>

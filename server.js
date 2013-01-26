@@ -9,10 +9,22 @@ var WIN_SIZE = 3600;
 
 var nextUserId  = 0;
 var nextEnemyId = 0;
+var nextGridUnit = 0;
 
 var players = [];
 var enemies = [];
 var weapons = [];
+var districts = [
+	{x:0, y:0},
+	{x:2400, y:2400},
+	{x:0, y:2400},
+	{x:2400, y:0},
+	{x:0, y:1200},
+	{x:2400, y:1200},
+	{x:1200, y:2400},
+	{x:1200, y:0},
+	{x:1200, y:1200}
+];
 
 app.use(express.static('public'));
 app.listen(port);
@@ -47,19 +59,36 @@ var Weapon = function(name, strength) {
 weapons.push('shotgun', 100);
 
 
+var Coords = function() {
+
+	var dIndex;
+
+	if (nextGridUnit >= 9) dIndex = parseInt(Math.random() * 8, 10);
+	else dIndex = nextGridUnit++;
+
+	var district = districts[dIndex];
+
+	this.x = parseInt(Math.random() * 600, 10) + district.x + 300; // center of each district
+	this.y = parseInt(Math.random() * 600, 10) + district.y + 300;
+};
+
+
 // handle sockets
 io.sockets.on('connection', function (socket) {
 
 	socket.on('user:connect', function(name){
 		socket.set('nickname', name);
 
-		var id = getNextUserId();
+		var out = {
+			id: getNextUserId(),
+			coords: new Coords()
+		};
 
-		players[id] = socket.id;
-		console.log("Received", name, "| Sending", id);
+		players[out.id] = socket.id;
+		console.log("Received", name, "| Sending", out.id);
 
-		socket.set('uid', id);
-		socket.emit('server:userId', id);
+		socket.set('uid', out.id);
+		socket.emit('server:userSettings', out);
 	});
 
 	socket.on('user:hit', function(data) {
@@ -68,8 +97,15 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on('user:move:pos', function(data) {
-		console.log('user:move:pos', data);
 		// id, x, y
+
+		if (data.x < 0) data.x = 0;
+		if (data.x > WIN_SIZE) data.x = WIN_SIZE;
+		if (data.y < 0) data.y = 0;
+		if (data.y > WIN_SIZE) data.y = WIN_SIZE;
+
+		console.log(data);
+
 		socket.broadcast.volatile.emit('user:move:pos', data);
 	});
 
@@ -84,15 +120,15 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on('user:weapon:state', function(data) {
-		// shooting?
+		// SHOTS FIRED!!!
 		socket.broadcast.volatile.emit('user:weapon:state', data);
 	});
 
-	/*socket.on('user:death', function() {
+	socket.on('user:death', function() {
 		socket.get('uid', function (err, id) {
 			socket.broadcast.emit('user:death', id);
 		});
-	});*/
+	});
 
 	socket.on('enemy:hit', function(data) {
 		// enemy uid
@@ -104,7 +140,6 @@ io.sockets.on('connection', function (socket) {
 		} else {
 			socket.broadcast.volatile.emit('enemy:hit', enemies[data.enemy.uid]);
 		}
-
 	});
 
 	socket.on('enemy:death', function(enemyId) {
@@ -118,6 +153,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('disconnect', function() {
 		socket.get('uid', function (err, id) {
 			console.log("User " + id + " disconnected");
+			delete players[id];
 			socket.broadcast.emit('user:disconnect', id);
 		});
 	});
