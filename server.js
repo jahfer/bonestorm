@@ -1,4 +1,5 @@
-var app = require('express').createServer(),
+var express = require('express'),
+	app = express.createServer(),
 	io = require('socket.io').listen(app);
 
 var MAX_ID_SIZE  = 9000000000000000;
@@ -7,9 +8,11 @@ var port = process.env.PORT || 5000;
 var nextUserId  = 0;
 var nextEnemyId = 0;
 
+var players = [];
 var enemies = [];
 var weapons = [];
 
+app.use(express.static('public'));
 app.listen(port);
 
 io.configure(function () {
@@ -18,10 +21,6 @@ io.configure(function () {
 
 app.get('/', function(req, res) {
 	res.sendfile(__dirname + "/index.html");
-});
-
-app.get('/raphael-min.js', function(req, res) {
-	res.sendfile(__dirname + "/js/raphael-min.js");
 });
 
 // initialize enemies
@@ -51,12 +50,18 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('user:connect', function(name){
 		socket.set('nickname', name);
-		socket.set('uid', nextUserId);
-		socket.emit('server:userId', getNextUserId());
+
+		var id = getNextUserId();
+
+		players[id] = socket.id;
+
+		socket.set('uid', id);
+		socket.emit('server:userId', id);
 	});
 
 	socket.on('user:hit', function(data) {
-		socket.broadcast.emit('user:hit', data);
+		// tell the player that was hit to update their health
+		io.sockets.socket(players[data.player.id]).emit('self:hit', data);
 	});
 
 	socket.on('user:move:pos', function(data) {
