@@ -9,6 +9,7 @@ var WIN_SIZE = 3600;
 
 var nextUserId  = 0;
 var nextEnemyId = 0;
+var nextBulletId = 0;
 var nextGridUnit = 0;
 
 var players = [];
@@ -122,7 +123,14 @@ io.sockets.on('connection', function (socket) {
 			socket.get('uid', function (err, id) {
 				io.sockets.socket(players[data.player.id].socketid).emit('self:hit', {damage: data.damage, killer: id});
 			});
+
+			socket.broadcast('weapon:hit', data.id);
 		}
+	});
+
+	// hits a wall
+	socket.on('weapon:hit', function(id) {
+		socket.broadcast('weapon:hit', id);
 	});
 
 	socket.on('user:move:pos', function(data) {
@@ -148,9 +156,15 @@ io.sockets.on('connection', function (socket) {
 		socket.broadcast.volatile.emit('user:weapon:pickup', data);
 	});
 
-	socket.on('user:weapon:state', function(data) {
+	socket.on('user:weapon:shot', function(data) {
 		// SHOTS FIRED!!!
-		socket.broadcast.volatile.emit('user:weapon:state', data);
+		/* data = {x:#, y:#, speed:{x:#, y:#}, range:#} */
+
+		var bulletId = getNextBulletId();
+		data.fn(bulletId);
+		delete data.fn;
+		data.id = bulletId;
+		socket.broadcast.volatile.emit('user:weapon:shot', data);
 	});
 
 	socket.on('user:death', function() {
@@ -164,6 +178,7 @@ io.sockets.on('connection', function (socket) {
 		if (typeof enemies[data.enemy.uid] != "undefined" && typeof weapons[data.weapon] != "undefined")
 			enemies[data.enemy.uid].health -= weapons[data.weapon].strength;
 
+		if (typeof enemies[data.enemy.uid] != "undefined")
 		if (enemies[data.enemy.uid].health < 0) {
 			delete enemies[data.enemy.uid];
 			socket.broadcast.emit('enemy:death', data.enemy.uid);
@@ -200,6 +215,15 @@ function getNextEnemyId() {
 
 function getNextUserId() {
 	var nextId = nextUserId++;
+	if (nextId > MAX_ID_SIZE) {
+		nextId = 0;
+	}
+
+	return nextId;
+}
+
+function getNextBulletId() {
+	var nextId = nextBulletId++;
 	if (nextId > MAX_ID_SIZE) {
 		nextId = 0;
 	}

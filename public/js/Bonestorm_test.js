@@ -11,6 +11,7 @@ var BonestormTest = (function (_super) {
         this.name = "BONESTORM: TEST";
         this.enemyPlayers = new Array();
         this.bullets = new Array();
+        this.opponentBullets = new Array();
         this.keyPressed = "NONE";
         this.setCanvas(canvas);
         this.loader = new AssetLoadHandler();
@@ -20,6 +21,12 @@ var BonestormTest = (function (_super) {
         this.background.setAssetHandler(this.loader);
         this.background.setCanvas(this.canvas);
         this.player = new PlayerSprite(this.canvas, this, this.camera);
+        this.enemyPlayers.push(new EnemyPlayerSprite(this.canvas, this, this.camera));
+        this.enemyPlayers[0].setPosition(100, 100);
+        this.initSocket();
+        this.start();
+    }
+    BonestormTest.prototype.initSocket = function () {
         var _this = this;
         socket.emit("user:connect", "THRILLHO");
         socket.on("server:userSettings", function (data) {
@@ -41,8 +48,13 @@ var BonestormTest = (function (_super) {
             console.log(id);
             delete _this.enemyPlayers[id];
         });
-        this.start();
-    }
+        socket.on("user:weapon:shot", function (data) {
+            _this.opponentBullets[data.id] = (new Projectile(data.x, data.y, data.speed.x, data.speed.y, _this.camera, "opponent"));
+        });
+        socket.on("weapon:hit", function (id) {
+            this.bullets[id].draw();
+        });
+    };
     BonestormTest.prototype.addImageAsset = function (name, sprite, src) {
         var asset = new ImageAsset("bg");
         asset.setSrc(src);
@@ -104,6 +116,7 @@ var BonestormTest = (function (_super) {
         });
         for(var i in this.bullets) {
             if(this.bullets[i].hit == true) {
+                socket.emit("weapon:hit", this.bullets[i].id);
                 delete this.bullets[i];
             } else {
                 this.bullets[i].detectCollisions(this.enemyPlayers);
@@ -147,24 +160,6 @@ var BonestormTest = (function (_super) {
     };
     BonestormTest.prototype.addBullet = function (bullet) {
         this.bullets.push(bullet);
-    };
-    BonestormTest.prototype.checkOtherPlayerExists = function (id) {
-        if(this.enemyPlayers[id]) {
-            return true;
-        }
-        return false;
-    };
-    BonestormTest.prototype.newOtherPlayer = function (id, x, y) {
-        this.enemyPlayers[id] = new EnemyPlayerSprite(this.canvas, this, this.camera);
-        this.enemyPlayers[id].setPosition(x, y);
-    };
-    BonestormTest.prototype.otherPlayerMoved = function (id, x, y) {
-        this.enemyPlayers[id].setPosition(x, y);
-    };
-    BonestormTest.prototype.removeOtherPlayer = function (id) {
-        delete this.enemyPlayers[id];
-    };
-    BonestormTest.prototype.onPlayerMove = function (func) {
     };
     return BonestormTest;
 })(AppFrame);

@@ -152,6 +152,15 @@ var PlayerSprite = (function (_super) {
         var temp = new Projectile(this.X, this.Y, bX, bY, this.camera, "player");
         temp.setCanvas(this.canvas);
         this.BS.addBullet(temp);
+        socket.emit("user:weapon:shot", {
+            x: temp.X,
+            y: temp.Y,
+            speed: temp.getSpeed(),
+            range: temp.getRange(),
+            fn: function (id) {
+                temp.id = id;
+            }
+        });
     };
     PlayerSprite.prototype.keyPressed = function (key) {
         this.key = key;
@@ -219,9 +228,10 @@ var EnemyPlayerSprite = (function (_super) {
         var _this = this;
         socket.emit("user:hit", {
             player: _this.id,
-            damage: bullet.damage
+            damage: bullet.damage,
+            id: bullet.id
         });
-        if(bullet.X > this.X && bullet.X < this.X + this.width && bullet.Y > this.Y && bullet.Y < this.Y + this.height) {
+        if(bullet.X > this.X - this.width / 2 && bullet.X < this.X + this.width / 2 && bullet.Y > this.Y - this.height / 2 && bullet.Y < this.Y + this.height / 2) {
             this.health -= bullet.damage;
             console.log("PLAYER HIT");
             return true;
@@ -237,6 +247,7 @@ var EnemyPlayerSprite = (function (_super) {
         this.context.arc(this.x, this.y, 40, 0, 2 * Math.PI, false);
         this.context.fillStyle = 'red';
         this.context.fill();
+        this.context.closePath();
     };
     return EnemyPlayerSprite;
 })(SpritesheetSprite);
@@ -248,6 +259,7 @@ var Projectile = (function (_super) {
         this.X = 0;
         this.Y = 0;
         this.damage = 1;
+        this.id = -1;
         this.dist = 0;
         this.owner = "player";
         this.SPEED = 20;
@@ -259,6 +271,15 @@ var Projectile = (function (_super) {
         this.speedY = speedY * this.SPEED;
         this.camera = camera;
     }
+    Projectile.prototype.getSpeed = function () {
+        return {
+            x: this.speedX,
+            y: this.speedY
+        };
+    };
+    Projectile.prototype.getRange = function () {
+        return this.RANGE;
+    };
     Projectile.prototype.update = function () {
         this.x = this.X - this.camera.x;
         this.y = this.Y - this.camera.y;
@@ -278,7 +299,7 @@ var Projectile = (function (_super) {
     };
     Projectile.prototype.drawMethod = function (x, y) {
         this.context.beginPath();
-        this.context.arc(this.x - this.width / 2, this.y - this.width / 2, this.width, this.height, 2 * Math.PI, false);
+        this.context.arc(this.x, this.y, this.width, this.height, 2 * Math.PI, false);
         this.context.fillStyle = 'yellow';
         this.context.fill();
     };
