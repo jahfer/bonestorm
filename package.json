@@ -11,6 +11,6 @@
 	},
 	"subdomain": "bonestorm",
 	"scripts": {
-		"start": "server.js"
+		"start": "src/server.js"
 	}
 }
