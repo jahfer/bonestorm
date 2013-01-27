@@ -156,13 +156,15 @@ io.sockets.on('connection', function (socket) {
 		socket.broadcast.volatile.emit('user:weapon:pickup', data);
 	});
 
-	socket.on('user:weapon:shot', function(data) {
+	socket.on('user:weapon:shot', function(data, fn) {
 		// SHOTS FIRED!!!
 		/* data = {x:#, y:#, speed:{x:#, y:#}, range:#} */
 
 		var bulletId = getNextBulletId();
-		data[fn](bulletId);
-		delete data.fn;
+		
+		if (typeof fn != "undefined")
+			fn(bulletId);
+
 		data.id = bulletId;
 		socket.broadcast.volatile.emit('user:weapon:shot', data);
 	});
