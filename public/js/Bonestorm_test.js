@@ -188,6 +188,7 @@ var Bonestorm = (function (_super) {
         for(var i in this.opponentBullets) {
             this.opponentBullets[i].draw();
         }
+        this.pipes.draw();
     };
     Bonestorm.prototype.exit = function () {
     };
