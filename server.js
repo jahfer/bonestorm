@@ -124,13 +124,13 @@ io.sockets.on('connection', function (socket) {
 				io.sockets.socket(players[data.player.id].socketid).emit('self:hit', {damage: data.damage, killer: id});
 			});
 
-			socket.broadcast('weapon:hit', data.id);
+			socket.broadcast.emit('weapon:hit', data.id);
 		}
 	});
 
 	// hits a wall
 	socket.on('weapon:hit', function(id) {
-		socket.broadcast('weapon:hit', id);
+		socket.broadcast.emit('weapon:hit', id);
 	});
 
 	socket.on('user:move:pos', function(data) {
