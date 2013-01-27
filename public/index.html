@@ -2,10 +2,32 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Bonestorm Test</title>
+      <link rel="stylesheet" href="stylesheet.css" type="text/css"> 
 </head>
 <body onload="main();">
-    <h1>Test for BONESTORM</h1>
-    <canvas id="draw" width="600px" height="600px" style="border: 1px solid gray;"></canvas>
+    <div id="wrapper">
+         <div id="header">
+            <a id="rb" href="http://rbaylis.com">
+               <div id="rb-hover"></div>
+               <div id="rb-off"></div>
+            </a>
+            <a id="jh" href="http://jahfer.com">
+               <div id="jh-hover"></div>
+               <div id="jh-off"></div>
+            </a>
+            <a id="sy" href="http://sunmock.com">
+               <div id="sy-hover"></div>
+               <div id="sy-off"></div>
+            </a>
+         </div>
+         <div id="game">
+            <canvas id="draw" width="600px" height="600px"></canvas> 
+            <div id="interface">
+               <div id="header-image">
+               </div>
+            </div>
+         </div>
+     </div>
 
     <script>
         var Bonestorm;

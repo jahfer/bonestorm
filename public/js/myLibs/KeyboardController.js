@@ -51,12 +51,18 @@ var KeyboardController = (function () {
         var _this = this;
         this.mousetrap.bind(key, function (e) {
             var temp = _this.keydownMap[key];
+
+            e.preventDefault();
+
             if(temp.keypressed !== true) {
                 temp.keypressed = true;
                 temp.func(e);
             }
         }, "keydown");
         this.mousetrap.bind(key, function (e) {
+
+            e.preventDefault();
+            
             _this.keydownMap[key].keypressed = false;
             if(onup) {
                 onup(e);
