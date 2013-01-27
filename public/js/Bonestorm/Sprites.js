@@ -59,6 +59,7 @@ var PlayerSprite = (function (_super) {
         });
     }
     PlayerSprite.prototype.damagePlayer = function (damage, killer) {
+        console.log("DAMAGED PLAYER");
         this.health -= damage;
         if(this.health <= 0) {
             this.alive = false;
@@ -67,6 +68,7 @@ var PlayerSprite = (function (_super) {
     };
     PlayerSprite.prototype.playerDies = function () {
         socket.emit("user:death");
+        console.log("DEAD PLAYER");
     };
     PlayerSprite.prototype.setLimits = function (limits) {
         this.LIMITS = limits;
@@ -103,6 +105,7 @@ var PlayerSprite = (function (_super) {
 
             }
             default: {
+                this.setCurrentAnimation("idle");
                 this.speedX = Math.round(this.speedX * this.DECCEL);
                 this.speedY = Math.round(this.speedY * this.DECCEL);
 
@@ -118,6 +121,7 @@ var PlayerSprite = (function (_super) {
         } else {
             this.speedY = 0;
         }
+        this.time++;
         return true;
     };
     PlayerSprite.prototype.onMove = function () {
@@ -129,10 +133,16 @@ var PlayerSprite = (function (_super) {
         });
     };
     PlayerSprite.prototype.drawMethod = function (x, y) {
-        this.context.beginPath();
-        this.context.arc(this.x, this.y, 40, 0, 2 * Math.PI, false);
-        this.context.fillStyle = 'green';
-        this.context.fill();
+        if(this.drawSprite === true && x < this.canvas.width && y < this.canvas.height && x > (-this.width) && y > (-this.height)) {
+            this.context.save();
+            this.context.translate(this.x, this.y);
+            this.context.rotate(this.rotation);
+            this.sprSheet.draw(this.context, this.currentFrame, -40, -40, 80, 80);
+            this.context.restore();
+        }
+        if(this.time % 3 == 0) {
+            this.nextFrame();
+        }
     };
     PlayerSprite.prototype.shoot = function () {
         var bX = 0, bY = 0;
@@ -156,31 +166,37 @@ var PlayerSprite = (function (_super) {
             x: temp.X,
             y: temp.Y,
             speed: temp.getSpeed(),
-            range: temp.getRange(),
-            fn: function (id) {
-                temp.id = id;
-            }
+            range: temp.getRange()
+        }, function (id) {
+            temp.id = id;
         });
     };
     PlayerSprite.prototype.keyPressed = function (key) {
         this.key = key;
+        if(this.currentAnim != "walk") {
+            this.setCurrentAnimation("walk");
+        }
     };
     PlayerSprite.prototype.moveUp = function () {
+        this.setRotation(0);
         if(this.speedY > -this.MAX_SPEED) {
             this.speedY -= this.ACCEL;
         }
     };
     PlayerSprite.prototype.moveDown = function () {
+        this.setRotation(Math.PI);
         if(this.speedY < this.MAX_SPEED) {
             this.speedY += this.ACCEL;
         }
     };
     PlayerSprite.prototype.moveLeft = function () {
+        this.setRotation(-Math.PI / 2);
         if(this.speedX > -this.MAX_SPEED) {
             this.speedX -= this.ACCEL;
         }
     };
     PlayerSprite.prototype.moveRight = function () {
+        this.setRotation(Math.PI / 2);
         if(this.speedX < this.MAX_SPEED) {
             this.speedX += this.ACCEL;
         }
@@ -189,7 +205,7 @@ var PlayerSprite = (function (_super) {
 })(SpritesheetSprite);
 var EnemyPlayerSprite = (function (_super) {
     __extends(EnemyPlayerSprite, _super);
-    function EnemyPlayerSprite(canvas, BS, camera) {
+    function EnemyPlayerSprite(canvas, BS, camera, id) {
         _super.call(this, "ENEMYPLAYER SPRITE");
         this.dir = "UP";
         this.X = 0;
@@ -202,6 +218,7 @@ var EnemyPlayerSprite = (function (_super) {
         this.BS = BS;
         this.camera = camera;
         this.setSize(80, 80);
+        this.id = id;
         this.x = -100;
         this.y = -100;
     }
@@ -211,14 +228,18 @@ var EnemyPlayerSprite = (function (_super) {
         if(Math.abs(diffX) > Math.abs(diffY)) {
             if(diffX < 0) {
                 this.dir = "LEFT";
+                this.setRotation(-Math.PI / 2);
             } else {
                 this.dir = "RIGHT";
+                this.setRotation(Math.PI / 2);
             }
         } else {
             if(diffY > 0) {
                 this.dir = "DOWN";
+                this.setRotation(Math.PI);
             } else {
                 this.dir = "UP";
+                this.setRotation(0);
             }
         }
         this.X = x;
@@ -226,14 +247,14 @@ var EnemyPlayerSprite = (function (_super) {
     };
     EnemyPlayerSprite.prototype.detectHit = function (bullet) {
         var _this = this;
-        socket.emit("user:hit", {
-            player: _this.id,
-            damage: bullet.damage,
-            id: bullet.id
-        });
         if(bullet.X > this.X - this.width / 2 && bullet.X < this.X + this.width / 2 && bullet.Y > this.Y - this.height / 2 && bullet.Y < this.Y + this.height / 2) {
             this.health -= bullet.damage;
             console.log("PLAYER HIT");
+            socket.emit("user:hit", {
+                player: _this.id,
+                damage: bullet.damage,
+                bulletId: bullet.id
+            });
             return true;
         }
         return false;
@@ -241,13 +262,19 @@ var EnemyPlayerSprite = (function (_super) {
     EnemyPlayerSprite.prototype.update = function () {
         this.x = this.X - this.camera.x;
         this.y = this.Y - this.camera.y;
+        this.time++;
     };
-    EnemyPlayerSprite.prototype.drawMethod = function () {
-        this.context.beginPath();
-        this.context.arc(this.x, this.y, 40, 0, 2 * Math.PI, false);
-        this.context.fillStyle = 'red';
-        this.context.fill();
-        this.context.closePath();
+    EnemyPlayerSprite.prototype.drawMethod = function (x, y) {
+        if(this.drawSprite === true && x < this.canvas.width && y < this.canvas.height && x > (-this.width) && y > (-this.height)) {
+            this.context.save();
+            this.context.translate(this.x, this.y);
+            this.context.rotate(this.rotation);
+            this.sprSheet.draw(this.context, this.currentFrame, -40, -40, 80, 80);
+            this.context.restore();
+        }
+        if(this.time % 3 == 0) {
+            this.nextFrame();
+        }
     };
     return EnemyPlayerSprite;
 })(SpritesheetSprite);
@@ -272,9 +299,11 @@ var Projectile = (function (_super) {
         this.camera = camera;
     }
     Projectile.prototype.getSpeed = function () {
+        var tempX = (this.speedX == 0) ? 0 : ((this.speedX > 0) ? 1 : -1);
+        var tempY = (this.speedY == 0) ? 0 : ((this.speedY > 0) ? 1 : -1);
         return {
-            x: this.speedX,
-            y: this.speedY
+            x: tempX,
+            y: tempY
         };
     };
     Projectile.prototype.getRange = function () {

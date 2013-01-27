@@ -107,8 +107,8 @@ var SpriteSheet = (function (_super) {
         this.Animations = new Array();
         this.defaultAnim = "all";
         this.framePos = new Array();
-        this.origWidth = 0;
-        this.origHeight = 0;
+        this.origWidth = -1;
+        this.origHeight = -1;
         this.width = 0;
         this.height = 0;
         this.padX = 0;
@@ -149,6 +149,7 @@ var SpriteSheet = (function (_super) {
         return null;
     };
     SpriteSheet.prototype.getNextFrame = function (frame, anim) {
+
         if(this.Animations[anim]) {
             if(this.Animations[anim].reversed) {
                 return this.getPrevFrame(frame, anim);
@@ -157,11 +158,13 @@ var SpriteSheet = (function (_super) {
                 return (frame + 1);
             } else {
                 if(frame == this.Animations[anim].end) {
-                    this.Animations[anim].callback();
+                    if (typeof this.Animations[anim].callback !== "undefined")
+                        this.Animations[anim].callback();
+                    
                     if(this.Animations[anim].repeat == true) {
                         return this.Animations[anim].start;
                     } else {
-                        return null;
+                        return this.Animations[anim].start;
                     }
                 } else {
                     if(frame > this.Animations[anim].end) {

@@ -50,7 +50,7 @@ var AssetLoadHandler = (function () {
         return _temp;
     };
     AssetLoadHandler.prototype.pushTo = function (obj, names) {
-        console.log("pushTo" + names[0]);
+        console.log("pushTo " + names[0]);
         obj.pushAsset(this.getAll(names));
     };
     AssetLoadHandler.prototype.pushFrom = function (obj, names) {

@@ -117,14 +117,16 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('user:hit', function(data) {
 		// tell the player that was hit to update their health
-		if (typeof data.player != "undefined" && typeof players[data.player.id] != "undefined") {
-			var sid = players[data.player.id].socketid;
+		console.log("user:hit", data);
+		if (typeof data.player != "undefined" && typeof players[data.player] != "undefined") {
+			var sid = players[data.player].socketid;
 			/*{ damage: #, killer: # }*/
 			socket.get('uid', function (err, id) {
-				io.sockets.socket(players[data.player.id].socketid).emit('self:hit', {damage: data.damage, killer: id});
+				console.log("self:hit", id);
+				io.sockets.socket(players[data.player].socketid).emit('self:hit', {damage: data.damage, killer: id});
 			});
 
-			socket.broadcast.emit('weapon:hit', data.id);
+			socket.broadcast.emit('weapon:hit', data.bulletId);
 		}
 	});
 
@@ -139,6 +141,8 @@ io.sockets.on('connection', function (socket) {
 		if (data.x > WIN_SIZE) data.x = WIN_SIZE;
 		if (data.y < 0) data.y = 0;
 		if (data.y > WIN_SIZE) data.y = WIN_SIZE;
+
+		console.log('user:move:pos', data);
 
 		if (typeof players[data.id] != "undefined")
 			players[data.id].coords = {x: data.x, y: data.y};
@@ -161,7 +165,7 @@ io.sockets.on('connection', function (socket) {
 		/* data = {x:#, y:#, speed:{x:#, y:#}, range:#} */
 
 		var bulletId = getNextBulletId();
-		
+
 		if (typeof fn != "undefined")
 			fn(bulletId);
 
