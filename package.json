@@ -1,6 +1,6 @@
 {
 	"name": "bonestorm",
-	"version": "1.0.0",
+	"version": "1.0.0-1",
 	"dependencies": {
 		"express": "2.5.x",
 		"socket.io": "0.9.13"
@@ -11,6 +11,6 @@
 	},
 	"subdomain": "bonestorm",
 	"scripts": {
-		"start": "src/server.js"
+		"start": "server.js"
 	}
 }
