@@ -47,6 +47,7 @@ var SpritesheetSprite = (function (_super) {
     SpritesheetSprite.prototype.setCurrent = function (name) {
         if(this.spriteSheets[name]) {
             this.currentAnim = "all";
+            this.currentFrame = 0;
             return this.sprSheet = this.spriteSheets[name];
         }
         return null;
