@@ -1,8 +1,5 @@
-# Events
-    user:connect
-    user:move:pos
-    user:move:dir
-    user:weapon:pickup
-    user:weapon:state
-    user:death
-	
+# Bonestorm
+
+Created by [Russell Baylis](http://rbaylis.com), [Jahfer Husain](http://jahfer.com) and [Sunmock Yang](http://sunmock.com).
+
+Don't judge us for the terrible code!
