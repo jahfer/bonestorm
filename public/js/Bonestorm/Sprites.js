@@ -241,6 +241,7 @@ var EnemyPlayerSprite = (function (_super) {
         this.Y = 0;
         this.health = 0;
         this.alive = true;
+        this.isDrawn = true;
         this.id = -1;
         this.MAXHEALTH = 10;
         this.health = this.MAXHEALTH;
@@ -252,6 +253,15 @@ var EnemyPlayerSprite = (function (_super) {
         this.x = -100;
         this.y = -100;
     }
+    EnemyPlayerSprite.prototype.playerDied = function () {
+        this.alive = false;
+        this.setCurrent(1);
+        this.setCurrentAnimation("death");
+        var _this = this;
+        setTimeout(function () {
+            _this.isDrawn = false;
+        }, 3000);
+    };
     EnemyPlayerSprite.prototype.setPosition = function (x, y) {
         var diffX = x - this.X;
         var diffY = y - this.Y;
@@ -260,7 +270,7 @@ var EnemyPlayerSprite = (function (_super) {
             this.Y = y;
             return;
         }
-        if(Math.abs(diffX) > Math.abs(diffY)) {
+        if(this.alive == true && Math.abs(diffX) > Math.abs(diffY)) {
             if(diffX < 0) {
                 this.dir = "LEFT";
                 this.setRotation(-Math.PI / 2);
@@ -324,8 +334,8 @@ var Projectile = (function (_super) {
         this.id = -1;
         this.dist = 0;
         this.owner = "player";
-        this.SPEED = 20;
-        this.RANGE = 500;
+        this.SPEED = 30;
+        this.RANGE = 520;
         this.setSize(2, 2);
         this.X = X;
         this.Y = Y;

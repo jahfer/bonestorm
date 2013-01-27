@@ -45,7 +45,8 @@ var Bonestorm = (function (_super) {
                 _this.enemyPlayers[data.id].setPosition(data.x, data.y);
                 _this.enemyPlayers[data.id].setAssetHandler(_this.loader);
                 _this.enemyPlayers[data.id].requestAssets([
-                    "player"
+                    "player", 
+                    "splatter"
                 ]);
             }
         });
@@ -59,7 +60,8 @@ var Bonestorm = (function (_super) {
             _this.opponentBullets[data.id] = temp;
         });
         socket.on("user:death", function (id) {
-            delete _this.enemyPlayers[id];
+            //delete _this.enemyPlayers[id];
+            _this.enemyPlayers[id].playerDied();
         });
         socket.on("weapon:hit", function (id) {
             delete _this.opponentBullets[id];
@@ -225,7 +227,6 @@ var Bonestorm = (function (_super) {
         this.context.fillRect(25, 25, 200, 20);
         this.context.fillStyle = "#D00";
         this.context.fillRect(26, 26, this.player.health * 20 - 2, 18);
-
         if(typeof this.displayDeathPrompt != "undefined" && this.displayDeathPrompt) {
             this.context.fillStyle = "rgba(0, 0, 0, 0.3)";
             this.context.fillRect(0, 0, 600, 600);
@@ -233,17 +234,15 @@ var Bonestorm = (function (_super) {
             this.context.font = "30px Courier";
             this.context.fillText("YOU DIED!", 220, 250);
         } else {
-
             this.context.save();
-            if (this.player.health < 6) {
+            if(this.player.health < 6) {
                 var d = new Date();
-                if (d.getSeconds() % 2 === 0) {
+                if(d.getSeconds() % 2 === 0) {
                     this.context.fillStyle = "rgba(255, 0, 0, 0.3)";
                     this.context.fillRect(0, 0, 600, 600);
                 }
             }
             this.context.restore();
-
             if(typeof this.displayReloadPrompt != "undefined" && this.displayReloadPrompt) {
                 this.context.fillStyle = "#FFF";
                 this.context.font = "30px Courier";
