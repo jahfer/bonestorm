@@ -1,6 +1,6 @@
 {
 	"name": "bonestorm",
-	"version": "1.0.0",
+	"version": "0.2.0",
 	"dependencies": {
 		"express": "2.5.x",
 		"socket.io": "0.9.13"

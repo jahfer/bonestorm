@@ -12,7 +12,6 @@ var Bonestorm = (function (_super) {
         this.enemyPlayers = new Array();
         this.bullets = new Array();
         this.opponentBullets = new Array();
-        this.time = 0;
         this.keyPressed = "NONE";
         this.setCanvas(canvas);
         this.loader = new AssetLoadHandler();
@@ -53,6 +52,7 @@ var Bonestorm = (function (_super) {
         });
         socket.on("user:disconnect", function (id) {
             console.log(id);
+            delete _this.enemyPlayers[id];
         });
         socket.on("user:weapon:shot", function (data) {
             var temp = new Projectile(data.x, data.y, data.speed.x, data.speed.y, _this.camera, "opponent");
@@ -60,6 +60,7 @@ var Bonestorm = (function (_super) {
             _this.opponentBullets[data.id] = temp;
         });
         socket.on("user:death", function (id) {
+            //delete _this.enemyPlayers[id];
             _this.enemyPlayers[id].playerDied();
         });
         socket.on("weapon:hit", function (id) {
@@ -207,7 +208,6 @@ var Bonestorm = (function (_super) {
         for(var i in this.opponentBullets) {
             this.opponentBullets[i].update();
         }
-        this.time++;
     };
     Bonestorm.prototype.draw = function () {
         this.clearCanvas();
@@ -235,12 +235,12 @@ var Bonestorm = (function (_super) {
             this.context.fillText("YOU DIED!", 220, 250);
         } else {
             this.context.save();
-            if(this.player.health > 0 && this.player.health < this.player.MAX_HEALTH) {
-                var sinVal = (Math.sin((this.time / this.player.health) / 2) + 1) / 2;
-                var opacity = sinVal * (1 - this.player.health / this.player.MAX_HEALTH) / 2 + 0.001;
-                console.log(opacity);
-                this.context.fillStyle = "rgba(255, 0, 0, " + opacity + ")";
-                this.context.fillRect(0, 0, 600, 600);
+            if(this.player.health < 6) {
+                var d = new Date();
+                if(d.getSeconds() % 2 === 0) {
+                    this.context.fillStyle = "rgba(255, 0, 0, 0.3)";
+                    this.context.fillRect(0, 0, 600, 600);
+                }
             }
             this.context.restore();
             if(typeof this.displayReloadPrompt != "undefined" && this.displayReloadPrompt) {
