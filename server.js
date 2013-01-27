@@ -116,7 +116,13 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('user:hit', function(data) {
 		// tell the player that was hit to update their health
-		io.sockets.socket(players[data.player.id].socketid).emit('self:hit', data);
+		if (typeof data.player != "undefined" && typeof players[data.player.id] != "undefined") {
+			var sid = players[data.player.id].socketid;
+			/*{ damage: #, killer: # }*/
+			socket.get('uid', function (err, id) {
+				io.sockets.socket(players[data.player.id].socketid).emit('self:hit', {damage: data.damage, killer: id});
+			});
+		}
 	});
 
 	socket.on('user:move:pos', function(data) {
@@ -126,8 +132,9 @@ io.sockets.on('connection', function (socket) {
 		if (data.y < 0) data.y = 0;
 		if (data.y > WIN_SIZE) data.y = WIN_SIZE;
 
-		console.log("User #" + data.id + " moved");
-		players[data.id].coords = {x: data.x, y: data.y};
+		if (typeof players[data.id] != "undefined")
+			players[data.id].coords = {x: data.x, y: data.y};
+
 		socket.broadcast.volatile.emit('user:move:pos', data);
 	});
 
@@ -154,7 +161,8 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('enemy:hit', function(data) {
 		// enemy uid
-		enemies[data.enemy.uid].health -= weapons[data.weapon].strength;
+		if (typeof enemies[data.enemy.uid] != "undefined" && typeof weapons[data.weapon] != "undefined")
+			enemies[data.enemy.uid].health -= weapons[data.weapon].strength;
 
 		if (enemies[data.enemy.uid].health < 0) {
 			delete enemies[data.enemy.uid];
@@ -198,16 +206,3 @@ function getNextUserId() {
 
 	return nextId;
 }
-
-
-// [x] <- pos/dir/state of player
-// [ ] <- pos/dir/state of all enemies
-// [x] <- enemy health
-// [ ] <- user dis/connection
-// [x] <- weapon pickup
-
-// [x] -> current player pos/dir/state
-// [x] -> new player (username)
-// [x] -> weapon pickup
-// [x] -> fire weapon
-// [x] -> player death

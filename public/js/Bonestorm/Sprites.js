@@ -34,9 +34,13 @@ var PlayerSprite = (function (_super) {
         this.Y = 0;
         this.speedX = 0;
         this.speedY = 0;
+        this.alive = true;
+        this.health = 0;
+        this.killer = "";
         this.MAX_SPEED = 10;
         this.ACCEL = 2;
         this.DECCEL = 0.1;
+        this.MAX_HEALTH = 10;
         this.LIMITS = {
             minX: 0,
             minY: 0,
@@ -48,7 +52,22 @@ var PlayerSprite = (function (_super) {
         this.y = this.canvas.height / 2;
         this.BS = BS;
         this.camera = camera;
+        this.health = this.MAX_HEALTH;
+        var _this = this;
+        socket.on("self:hit", function (data) {
+            _this.damagePlayer(data.damage, data.killer);
+        });
     }
+    PlayerSprite.prototype.damagePlayer = function (damage, killer) {
+        this.health -= damage;
+        if(this.health <= 0) {
+            this.alive = false;
+            this.playerDies();
+        }
+    };
+    PlayerSprite.prototype.playerDies = function () {
+        socket.emit("user:death");
+    };
     PlayerSprite.prototype.setLimits = function (limits) {
         this.LIMITS = limits;
         return this;
@@ -157,8 +176,6 @@ var PlayerSprite = (function (_super) {
             this.speedX += this.ACCEL;
         }
     };
-    PlayerSprite.prototype.onHit = function (damage, hitBy) {
-    };
     return PlayerSprite;
 })(SpritesheetSprite);
 var EnemyPlayerSprite = (function (_super) {
@@ -169,6 +186,7 @@ var EnemyPlayerSprite = (function (_super) {
         this.X = 0;
         this.Y = 0;
         this.health = 0;
+        this.id = -1;
         this.MAXHEALTH = 10;
         this.health = this.MAXHEALTH;
         this.setCanvas(canvas);
@@ -198,8 +216,9 @@ var EnemyPlayerSprite = (function (_super) {
         this.Y = y;
     };
     EnemyPlayerSprite.prototype.detectHit = function (bullet) {
-        socket.emit("", {
-            player: this,
+        var _this = this;
+        socket.emit("user:hit", {
+            player: _this.id,
             damage: bullet.damage
         });
         if(bullet.X > this.X && bullet.X < this.X + this.width && bullet.Y > this.Y && bullet.Y < this.Y + this.height) {
@@ -209,11 +228,7 @@ var EnemyPlayerSprite = (function (_super) {
         }
         return false;
     };
-    EnemyPlayerSprite.prototype.log = function (b, t) {
-        console.log("X: " + b + " Y:" + t);
-    };
     EnemyPlayerSprite.prototype.update = function () {
-        this.log(this.X, this.Y);
         this.x = this.X - this.camera.x;
         this.y = this.Y - this.camera.y;
     };
@@ -255,7 +270,7 @@ var Projectile = (function (_super) {
         }
     };
     Projectile.prototype.detectCollisions = function (players) {
-        for(var i = 0; i < players.length; i++) {
+        for(var i in players) {
             if(players[i].detectHit(this) == true) {
                 this.hit = true;
             }
