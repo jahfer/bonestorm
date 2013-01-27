@@ -86,6 +86,9 @@ var Bonestorm = (function (_super) {
         }
         this.loader.addAsset(name, asset);
         sprite.setAssetHandler(this.loader);
+        sprite.requestAssets([
+            name
+        ]);
     };
     Bonestorm.prototype.initialize = function () {
         console.log("INITIALIZE");
@@ -112,33 +115,6 @@ var Bonestorm = (function (_super) {
             }
         ];
         this.addSpritesheetAsset("player", this.player, "img/WalkCycles/blue_player.png", init, animInit);
-        var init2 = {
-            width: 80,
-            height: 80,
-            padX: 0,
-            padY: 0
-        };
-        var animInit2 = [
-            {
-                name: "hit",
-                start: 0,
-                end: 4,
-                reversed: false,
-                repeat: false
-            }, 
-            {
-                name: "death",
-                start: 5,
-                end: 11,
-                reversed: false,
-                repeat: false
-            }
-        ];
-        this.addSpritesheetAsset("splatter", this.player, "img/Splatters/splatter_1_2.png", init2, animInit2);
-        this.player.requestAssets([
-            "player", 
-            "splatter"
-        ]);
         this.loader.setCallback(function () {
             console.log("LOADED");
             _this.onLoad();
@@ -212,6 +188,7 @@ var Bonestorm = (function (_super) {
         for(var i in this.opponentBullets) {
             this.opponentBullets[i].draw();
         }
+        this.pipes.draw();
     };
     Bonestorm.prototype.exit = function () {
     };

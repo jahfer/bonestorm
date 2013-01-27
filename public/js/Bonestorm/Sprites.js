@@ -69,11 +69,7 @@ var PlayerSprite = (function (_super) {
     PlayerSprite.prototype.playerDies = function () {
         this.alive = false;
         socket.emit("user:death");
-        this.setCurrent(1);
-        this.setCurrentAnimation("death");
-        console.log(this.sprSheet);
-        console.log(this.currentAnim);
-        console.log(this.currentFrame);
+        console.log("DEAD PLAYER");
         var _this = this;
         setTimeout(function () {
             _this.playerRespawn();
@@ -84,8 +80,6 @@ var PlayerSprite = (function (_super) {
         this.BS.clearEnemies();
         socket.emit("user:connect", "THRILLHO");
         this.health = this.MAX_HEALTH;
-        this.setCurrent(0);
-        this.setCurrentAnimation("idle");
     };
     PlayerSprite.prototype.setLimits = function (limits) {
         this.LIMITS = limits;
@@ -152,7 +146,7 @@ var PlayerSprite = (function (_super) {
         });
     };
     PlayerSprite.prototype.drawMethod = function (x, y) {
-        if(this.drawSprite === true && x < this.canvas.width && y < this.canvas.height && x > (-this.width) && y > (-this.height)) {
+        if(this.alive && this.drawSprite === true && x < this.canvas.width && y < this.canvas.height && x > (-this.width) && y > (-this.height)) {
             this.context.save();
             this.context.translate(this.x, this.y);
             this.context.rotate(this.rotation);
