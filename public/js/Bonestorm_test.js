@@ -223,6 +223,9 @@ var Bonestorm = (function (_super) {
         for(var i in this.opponentBullets) {
             this.opponentBullets[i].draw();
         }
+
+        this.pipes.draw();
+
         this.context.save();
         this.context.fillStyle = "#000";
         this.context.fillRect(25, 25, 200, 20);
