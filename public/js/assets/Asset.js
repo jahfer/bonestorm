@@ -157,11 +157,13 @@ var SpriteSheet = (function (_super) {
                 return (frame + 1);
             } else {
                 if(frame == this.Animations[anim].end) {
-                    this.Animations[anim].callback();
+                    if(typeof this.Animations[anim].callback !== "undefined") {
+                        this.Animations[anim].callback();
+                    }
                     if(this.Animations[anim].repeat == true) {
                         return this.Animations[anim].start;
                     } else {
-                        return null;
+                        return this.Animations[anim].end;
                     }
                 } else {
                     if(frame > this.Animations[anim].end) {
