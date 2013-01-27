@@ -69,6 +69,7 @@ var PlayerSprite = (function (_super) {
     };
     PlayerSprite.prototype.playerDies = function () {
         this.alive = false;
+        this.BS.score = 0;
         socket.emit("user:death");
         this.setCurrent(1);
         this.setCurrentAnimation("death");
@@ -294,6 +295,9 @@ var EnemyPlayerSprite = (function (_super) {
         var _this = this;
         if(bullet.X > this.X - this.width / 2 && bullet.X < this.X + this.width / 2 && bullet.Y > this.Y - this.height / 2 && bullet.Y < this.Y + this.height / 2) {
             this.health -= bullet.damage;
+            if(this.health <= 0) {
+                this.BS.score += 1;
+            }
             console.log("PLAYER HIT");
             socket.emit("user:hit", {
                 player: _this.id,
