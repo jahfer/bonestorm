@@ -35,6 +35,7 @@ var PlayerSprite = (function (_super) {
         this.speedX = 0;
         this.speedY = 0;
         this.alive = true;
+        this.bulletCount = 0;
         this.health = 0;
         this.killer = "";
         this.MAX_SPEED = 10;
@@ -71,9 +72,7 @@ var PlayerSprite = (function (_super) {
         socket.emit("user:death");
         this.setCurrent(1);
         this.setCurrentAnimation("death");
-        console.log(this.sprSheet);
-        console.log(this.currentAnim);
-        console.log(this.currentFrame);
+        this.BS.promptDeath();
         var _this = this;
         setTimeout(function () {
             _this.playerRespawn();
@@ -86,6 +85,7 @@ var PlayerSprite = (function (_super) {
         this.health = this.MAX_HEALTH;
         this.setCurrent(0);
         this.setCurrentAnimation("idle");
+        this.BS.removeDeathPrompt();
     };
     PlayerSprite.prototype.setLimits = function (limits) {
         this.LIMITS = limits;
@@ -180,7 +180,14 @@ var PlayerSprite = (function (_super) {
         }
         var temp = new Projectile(this.X, this.Y, bX, bY, this.camera, "player");
         temp.setCanvas(this.canvas);
-        this.BS.addBullet(temp);
+        if(this.bulletCount != -1) {
+            this.BS.addBullet(temp);
+            this.bulletCount++;
+        }
+        if(this.bulletCount > 10) {
+            this.bulletCount = -1;
+            this.BS.promptReload();
+        }
         socket.emit("user:weapon:shot", {
             x: temp.X,
             y: temp.Y,
@@ -191,8 +198,11 @@ var PlayerSprite = (function (_super) {
         });
     };
     PlayerSprite.prototype.keyPressed = function (key) {
+        if(this.key == key) {
+            return;
+        }
         this.key = key;
-        if(this.currentAnim != "walk") {
+        if(this.alive && this.currentAnim != "walk") {
             this.setCurrentAnimation("walk");
         }
     };
@@ -230,6 +240,7 @@ var EnemyPlayerSprite = (function (_super) {
         this.X = 0;
         this.Y = 0;
         this.health = 0;
+        this.alive = true;
         this.id = -1;
         this.MAXHEALTH = 10;
         this.health = this.MAXHEALTH;

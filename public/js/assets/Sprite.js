@@ -19,7 +19,6 @@ var Sprite = (function () {
             y: 0
         };
         this.callback = function (sprite) {
-            console.log("Callback not set");
         };
         this.drawSprite = true;
         this.assetNameList = new Array();
@@ -48,7 +47,6 @@ var Sprite = (function () {
         return this;
     };
     Sprite.prototype.requestAssets = function (names) {
-        console.log("SPRITE REQUEST ASSETS");
         this.initialized = false;
         this.assetHandler.pushFrom(this, names ? names : this.assetNameList);
     };

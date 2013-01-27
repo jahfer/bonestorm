@@ -49,7 +49,6 @@ var KeyboardController = (function () {
         _obj.func = func;
         this.keydownMap[key] = _obj;
         var _this = this;
-        console.log(keypress);
         this.mousetrap.bind(key, function (e) {
             var temp = _this.keydownMap[key];
             if(temp.keypressed !== true) {

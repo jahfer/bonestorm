@@ -172,6 +172,14 @@ var Bonestorm = (function (_super) {
                 _this.keyPressed = "NONE";
             }
         });
+        this.keyboard.bind("r", function () {
+            _this.displayReloadPrompt = false;
+            _player.bulletCount = 0;
+        }, "keypress", true, function () {
+            if(_this.keyPressed == "RIGHT") {
+                _this.keyPressed = "NONE";
+            }
+        });
         this.keyboard.bind("space", function () {
             _player.shoot();
         }, "keypress", true, function () {
@@ -212,8 +220,36 @@ var Bonestorm = (function (_super) {
         for(var i in this.opponentBullets) {
             this.opponentBullets[i].draw();
         }
+        this.context.save();
+        this.context.fillStyle = "#000";
+        this.context.fillRect(25, 25, 200, 20);
+        this.context.fillStyle = "#D00";
+        this.context.fillRect(26, 26, this.player.health * 20 - 2, 18);
+        if(typeof this.displayDeathPrompt != "undefined" && this.displayDeathPrompt) {
+            this.context.fillStyle = "rgba(0, 0, 0, 0.3)";
+            this.context.fillRect(0, 0, 600, 600);
+            this.context.fillStyle = "#F00";
+            this.context.font = "30px Courier";
+            this.context.fillText("YOU DIED!", 220, 250);
+        } else {
+            if(typeof this.displayReloadPrompt != "undefined" && this.displayReloadPrompt) {
+                this.context.fillStyle = "#FFF";
+                this.context.font = "30px Courier";
+                this.context.fillText("Press 'R' to Reload", 120, 250);
+            }
+        }
+        this.context.restore();
     };
     Bonestorm.prototype.exit = function () {
+    };
+    Bonestorm.prototype.promptReload = function () {
+        this.displayReloadPrompt = true;
+    };
+    Bonestorm.prototype.promptDeath = function () {
+        this.displayDeathPrompt = true;
+    };
+    Bonestorm.prototype.removeDeathPrompt = function () {
+        this.displayDeathPrompt = false;
     };
     Bonestorm.prototype.setCanvas = function (canvas) {
         this.canvas = canvas;

@@ -184,7 +184,9 @@ var SpriteSheet = (function (_super) {
                 return (frame + 1);
             } else {
                 if(frame == this.Animations[anim].start) {
-                    this.Animations[anim].callback();
+                    if(typeof this.Animations[anim].callback !== "undefined") {
+                        this.Animations[anim].callback();
+                    }
                     if(this.Animations[anim].repeat == true) {
                         return this.Animations[anim].end;
                     } else {
@@ -246,13 +248,13 @@ var Animation = (function () {
         this.reversed = false;
         this.start = start;
         this.end = end;
-        if(reversed) {
+        if(typeof reversed !== "undefined") {
             this.reversed = reversed;
         }
-        if(repeat) {
+        if(typeof repeat !== "undefined") {
             this.repeat = repeat;
         }
-        if(callback) {
+        if(typeof callback !== "undefined") {
             this.callback = callback;
         }
     }
