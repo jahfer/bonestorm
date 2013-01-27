@@ -41,6 +41,7 @@ var PlayerSprite = (function (_super) {
         this.ACCEL = 2;
         this.DECCEL = 0.1;
         this.MAX_HEALTH = 10;
+        this.TIMEOUT = 5000;
         this.LIMITS = {
             minX: 0,
             minY: 0,
@@ -62,64 +63,76 @@ var PlayerSprite = (function (_super) {
         console.log("DAMAGED PLAYER");
         this.health -= damage;
         if(this.health <= 0) {
-            this.alive = false;
             this.playerDies();
         }
     };
     PlayerSprite.prototype.playerDies = function () {
+        this.alive = false;
         socket.emit("user:death");
         console.log("DEAD PLAYER");
+        var _this = this;
+        setTimeout(function () {
+            _this.playerRespawn();
+        }, this.TIMEOUT);
+    };
+    PlayerSprite.prototype.playerRespawn = function () {
+        this.alive = true;
+        this.BS.clearEnemies();
+        socket.emit("user:connect", "THRILLHO");
+        this.health = this.MAX_HEALTH;
     };
     PlayerSprite.prototype.setLimits = function (limits) {
         this.LIMITS = limits;
         return this;
     };
     PlayerSprite.prototype.update = function () {
-        switch(this.key) {
-            case "UP": {
-                this.onMove();
-                this.moveUp();
-                this.speedX = Math.round(this.speedX * this.DECCEL);
-                break;
+        if(this.alive == true) {
+            switch(this.key) {
+                case "UP": {
+                    this.onMove();
+                    this.moveUp();
+                    this.speedX = Math.round(this.speedX * this.DECCEL);
+                    break;
 
-            }
-            case "DOWN": {
-                this.onMove();
-                this.moveDown();
-                this.speedX = Math.round(this.speedX * this.DECCEL);
-                break;
+                }
+                case "DOWN": {
+                    this.onMove();
+                    this.moveDown();
+                    this.speedX = Math.round(this.speedX * this.DECCEL);
+                    break;
 
-            }
-            case "LEFT": {
-                this.onMove();
-                this.moveLeft();
-                this.speedY = Math.round(this.speedY * this.DECCEL);
-                break;
+                }
+                case "LEFT": {
+                    this.onMove();
+                    this.moveLeft();
+                    this.speedY = Math.round(this.speedY * this.DECCEL);
+                    break;
 
-            }
-            case "RIGHT": {
-                this.onMove();
-                this.moveRight();
-                this.speedY = Math.round(this.speedY * this.DECCEL);
-                break;
+                }
+                case "RIGHT": {
+                    this.onMove();
+                    this.moveRight();
+                    this.speedY = Math.round(this.speedY * this.DECCEL);
+                    break;
 
-            }
-            default: {
-                this.setCurrentAnimation("idle");
-                this.speedX = Math.round(this.speedX * this.DECCEL);
-                this.speedY = Math.round(this.speedY * this.DECCEL);
+                }
+                default: {
+                    this.setCurrentAnimation("idle");
+                    this.speedX = Math.round(this.speedX * this.DECCEL);
+                    this.speedY = Math.round(this.speedY * this.DECCEL);
 
+                }
             }
-        }
-        if(this.speedX < 0 && this.X > this.LIMITS.minX || this.speedX > 0 && this.X < this.LIMITS.maxX) {
-            this.X += this.speedX;
-        } else {
-            this.speedX = 0;
-        }
-        if(this.speedY < 0 && this.Y > this.LIMITS.minY || this.speedY > 0 && this.Y < this.LIMITS.maxY) {
-            this.Y += this.speedY;
-        } else {
-            this.speedY = 0;
+            if(this.speedX < 0 && this.X > this.LIMITS.minX || this.speedX > 0 && this.X < this.LIMITS.maxX) {
+                this.X += this.speedX;
+            } else {
+                this.speedX = 0;
+            }
+            if(this.speedY < 0 && this.Y > this.LIMITS.minY || this.speedY > 0 && this.Y < this.LIMITS.maxY) {
+                this.Y += this.speedY;
+            } else {
+                this.speedY = 0;
+            }
         }
         this.time++;
         return true;
@@ -133,7 +146,7 @@ var PlayerSprite = (function (_super) {
         });
     };
     PlayerSprite.prototype.drawMethod = function (x, y) {
-        if(this.drawSprite === true && x < this.canvas.width && y < this.canvas.height && x > (-this.width) && y > (-this.height)) {
+        if(this.alive && this.drawSprite === true && x < this.canvas.width && y < this.canvas.height && x > (-this.width) && y > (-this.height)) {
             this.context.save();
             this.context.translate(this.x, this.y);
             this.context.rotate(this.rotation);
@@ -225,6 +238,11 @@ var EnemyPlayerSprite = (function (_super) {
     EnemyPlayerSprite.prototype.setPosition = function (x, y) {
         var diffX = x - this.X;
         var diffY = y - this.Y;
+        if(diffX == 0 && diffY == 0) {
+            this.X = x;
+            this.Y = y;
+            return;
+        }
         if(Math.abs(diffX) > Math.abs(diffY)) {
             if(diffX < 0) {
                 this.dir = "LEFT";

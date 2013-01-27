@@ -99,12 +99,6 @@ io.sockets.on('connection', function (socket) {
 			coords: new Coords()
 		};
 
-		players[out.id] = {
-			uid: out.id,
-			socketid: socket.id,
-			coords: out.coords
-		};
-
 		console.log("Received", name, "| Sending", out.id);
 
 		socket.set('uid', out.id);
@@ -113,6 +107,12 @@ io.sockets.on('connection', function (socket) {
 		players.forEach(function (player, index, array) {
 			socket.emit('user:move:pos', {id: player.uid, x: player.coords.x, y: player.coords.y});
 		});
+
+		players[out.id] = {
+			uid: out.id,
+			socketid: socket.id,
+			coords: out.coords
+		};
 	});
 
 	socket.on('user:hit', function(data) {
@@ -175,6 +175,7 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('user:death', function() {
 		socket.get('uid', function (err, id) {
+			delete players[id];
 			socket.broadcast.emit('user:death', id);
 		});
 	});

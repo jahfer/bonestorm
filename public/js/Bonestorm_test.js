@@ -31,16 +31,16 @@ var Bonestorm = (function (_super) {
         var _this = this;
         socket.emit("user:connect", "THRILLHO");
         socket.on("server:userSettings", function (data) {
-            console.log(data);
+            console.log("PLAYER SPAWNED");
             _this.player.id = data.id;
             _this.player.X = data.coords.x;
-            _this.player.Y = data.coord.y;
+            _this.player.Y = data.coords.y;
         });
         socket.on("user:move:pos", function (data) {
-            console.log(data);
             if(typeof _this.enemyPlayers[data.id] != "undefined") {
                 _this.enemyPlayers[data.id].setPosition(data.x, data.y);
             } else {
+                console.log("OPPONENT SPAWNED");
                 _this.enemyPlayers[data.id] = new EnemyPlayerSprite(_this.canvas, _this, _this.camera, data.id);
                 _this.enemyPlayers[data.id].setPosition(data.x, data.y);
                 _this.enemyPlayers[data.id].setAssetHandler(_this.loader);
@@ -57,6 +57,9 @@ var Bonestorm = (function (_super) {
             var temp = new Projectile(data.x, data.y, data.speed.x, data.speed.y, _this.camera, "opponent");
             temp.setCanvas(_this.canvas);
             _this.opponentBullets[data.id] = temp;
+        });
+        socket.on("user:death", function (id) {
+            delete _this.enemyPlayers[id];
         });
         socket.on("weapon:hit", function (id) {
             delete _this.opponentBullets[id];
@@ -75,7 +78,11 @@ var Bonestorm = (function (_super) {
         asset.setSrc(src);
         asset.init(frameInit.width, frameInit.height, frameInit.padX, frameInit.padY);
         for(var i in animInit) {
-            asset.setAnimation(animInit[i].name, animInit[i].start, animInit[i].end);
+            if(typeof animInit[i].callback !== "undefined") {
+                animInit[i].callback = function () {
+                };
+            }
+            asset.setAnimation(animInit[i].name, animInit[i].start, animInit[i].end, animInit[i].reversed, animInit[i].repeat, animInit[i].callback);
         }
         this.loader.addAsset(name, asset);
         sprite.setAssetHandler(this.loader);
@@ -181,7 +188,6 @@ var Bonestorm = (function (_super) {
         for(var i in this.opponentBullets) {
             this.opponentBullets[i].draw();
         }
-        //this.pipes.draw();
     };
     Bonestorm.prototype.exit = function () {
     };
@@ -201,6 +207,9 @@ var Bonestorm = (function (_super) {
         this.player.setLimits(limits);
         this.camera.setMax(this.MAX_X, this.MAX_Y);
         this.initialized = true;
+    };
+    Bonestorm.prototype.clearEnemies = function () {
+        this.enemyPlayers.slice(0);
     };
     Bonestorm.prototype.clearCanvas = function () {
         this.context.fillStyle = '#000';
