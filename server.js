@@ -161,7 +161,7 @@ io.sockets.on('connection', function (socket) {
 		/* data = {x:#, y:#, speed:{x:#, y:#}, range:#} */
 
 		var bulletId = getNextBulletId();
-		data.fn(bulletId);
+		data[fn](bulletId);
 		delete data.fn;
 		data.id = bulletId;
 		socket.broadcast.volatile.emit('user:weapon:shot', data);
