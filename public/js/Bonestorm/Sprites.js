@@ -81,6 +81,7 @@ var PlayerSprite = (function (_super) {
     };
     PlayerSprite.prototype.playerRespawn = function () {
         this.alive = true;
+        this.bulletCount = 0;
         this.BS.clearEnemies();
         socket.emit("user:connect", "THRILLHO");
         this.health = this.MAX_HEALTH;
@@ -179,6 +180,9 @@ var PlayerSprite = (function (_super) {
                 }
             }
         }
+
+        if (this.health <= 0) return;
+
         var temp = new Projectile(this.X, this.Y, bX, bY, this.camera, "player");
         temp.setCanvas(this.canvas);
         if(this.bulletCount != -1) {
@@ -293,6 +297,9 @@ var EnemyPlayerSprite = (function (_super) {
     };
     EnemyPlayerSprite.prototype.detectHit = function (bullet) {
         var _this = this;
+
+        if (this.alive == false) return;
+
         if(bullet.X > this.X - this.width / 2 && bullet.X < this.X + this.width / 2 && bullet.Y > this.Y - this.height / 2 && bullet.Y < this.Y + this.height / 2) {
             this.health -= bullet.damage;
             if(this.health <= 0) {
